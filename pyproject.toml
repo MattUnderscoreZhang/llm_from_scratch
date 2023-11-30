@@ -1,0 +1,18 @@
+[project]
+name = "llm_from_scratch"
+version = "0.1.0"
+description = "Tutorial following Karpathy's YouTube lecture."
+authors = [
+    {name = "Matt Zhang", email = "set.stun@gmail.com"},
+]
+dependencies = [
+    "torch>=2.1.1",
+    "tiktoken>=0.5.1",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = {text = "MIT"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
