@@ -14,11 +14,9 @@ class Model(nn.Module):
         # x and y are both of shape (batch_size, block_size)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
-        logits_prev_mean = torch.zeros((B, T, C))
-        for b in range(B):
-            for t in range(T):
-                logits_prev = logits[b, :t+1]
-                logits_prev_mean[b, t] = torch.mean(logits_prev, 0)
+        lower_matrix = torch.tril(torch.ones(T, T))
+        avg_matrix = lower_matrix / torch.sum(lower_matrix, dim=1, keepdim=True)
+        logits_prev_mean = avg_matrix @ logits
         loss = (
             F.cross_entropy(logits_prev_mean.view(B*T, C), y.reshape(B*T))
             if y is not None
