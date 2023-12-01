@@ -18,6 +18,7 @@ def get_batch(data: torch.Tensor, batch_size: int, block_size: int) -> torch.Ten
     return torch.stack([data[i:i+block_size+1] for i in ix])
 
 
+"""
 def train_with_batch(batch: torch.Tensor) -> None:
     batch_size = batch.shape[0]
     block_size = batch.shape[1] - 1
@@ -25,7 +26,7 @@ def train_with_batch(batch: torch.Tensor) -> None:
         for t in range(block_size):
             context = batch[b, :t+1]
             target = batch[b, t+1]
-            return context, target
+"""
 
 
 class BigramLanguageModel(nn.Module):
@@ -36,11 +37,19 @@ class BigramLanguageModel(nn.Module):
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        # for each single token x, predict which token y comes next
         # x and y are both of shape (batch_size, block_size)
-        # output is of shape (batch_size, block_size, embedding_size)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
-        logits = logits.view(B*T, C)
+        logits = logits.view(B*T, C)  # (batch_size, block_size, embedding_size)
         y = y.reshape(B*T)
         loss = F.cross_entropy(logits, y)
         return logits, loss
+
+    def generate(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+        for _ in range(max_new_tokens):
+            logits, _ = self(x[:, -1])  # last token in each batch only - (B, C)
+            probs = F.softmax(logits, dim=-1)  # (B, C)
+            x_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
+            x = torch.cat((x, x_next), dim=1)  # (B, T+1)
+        return x

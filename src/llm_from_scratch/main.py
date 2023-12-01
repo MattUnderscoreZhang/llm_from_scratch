@@ -1,10 +1,9 @@
 import torch
 
-from llm_from_scratch.tokenizer import get_token_set, encode, decode
+from llm_from_scratch.tokenizer import get_token_set, encode
 from llm_from_scratch.train import (
     get_train_validation_split,
     get_batch,
-    train_with_batch,
     BigramLanguageModel,
 )
 
