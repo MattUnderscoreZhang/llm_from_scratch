@@ -22,7 +22,7 @@ class BigramLanguageModel(nn.Module):
         )
         return logits, loss
 
-    def generate(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+    def generate_next_token(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
         for _ in range(max_new_tokens):
             logits, _ = self(x)  # last token in each batch only - (B, C)
             logits = logits[:, -1, :]  # remove dimension - (B, C)
