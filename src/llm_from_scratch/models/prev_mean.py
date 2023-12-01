@@ -10,13 +10,20 @@ class Model(nn.Module):
         # thus, here embedding_size = vocab_size
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
+    def _get_prev_mean_logits(self, logits: torch.Tensor) -> torch.Tensor:
+        _, T, _ = logits.shape
+        lower_matrix = torch.tril(torch.ones(T, T))  # lower triangular matrix
+        weight_matrix = torch.zeros(T, T)
+        weight_matrix = weight_matrix.masked_fill(lower_matrix == 0, float("-inf"))  # zero on lower diagonal, -inf on top
+        avg_matrix = F.softmax(weight_matrix, dim=-1)  # becomes a prev-value averager when left-multiplied
+        logits_prev_mean = avg_matrix @ logits
+        return logits_prev_mean
+
     def forward(self, x: torch.Tensor, y: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
         # x and y are both of shape (batch_size, block_size)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
-        lower_matrix = torch.tril(torch.ones(T, T))
-        avg_matrix = lower_matrix / torch.sum(lower_matrix, dim=1, keepdim=True)
-        logits_prev_mean = avg_matrix @ logits
+        logits_prev_mean = self._get_prev_mean_logits(logits)
         loss = (
             F.cross_entropy(logits_prev_mean.view(B*T, C), y.reshape(B*T))
             if y is not None
