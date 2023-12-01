@@ -1,11 +1,8 @@
 import torch
 
-from llm_from_scratch.tokenizer import get_token_set, encode
-from llm_from_scratch.train import (
-    get_train_validation_split,
-    get_batch,
-    BigramLanguageModel,
-)
+from llm_from_scratch.models import BigramLanguageModel
+from llm_from_scratch.sample_prep import get_train_validation_split, get_batch
+from llm_from_scratch.tokenizer import get_token_set, encode, decode
 
 
 if __name__ == "__main__":
@@ -21,5 +18,13 @@ if __name__ == "__main__":
 
     batch = get_batch(train_data, batch_size=4, block_size=8)
     # train_with_batch(batch)
-    out = model(batch[:, :-1], batch[:, 1:])
-    print(out.shape)
+    # logits, loss = model(batch[:, :-1], batch[:, 1:])
+
+    generated_text = decode(
+        model.generate(
+            torch.tensor([[vocab.index("S")]]),
+            max_new_tokens=100,
+        ).tolist()[0],
+        vocab,
+    ),
+    print(generated_text)
