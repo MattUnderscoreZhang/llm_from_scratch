@@ -3,7 +3,8 @@ from torch import nn
 
 from llm_from_scratch.analysis import plot_loss_history
 from llm_from_scratch.device import device
-from llm_from_scratch.models import BigramLanguageModel
+# from llm_from_scratch.models.bigram import Model
+from llm_from_scratch.models.prev_mean import Model
 from llm_from_scratch.sample_prep import get_train_validation_split
 from llm_from_scratch.tokenizer import get_token_set, encode, decode
 from llm_from_scratch.training import train_model
@@ -29,7 +30,7 @@ if __name__ == "__main__":
     data = torch.tensor(encode(text, vocab), dtype=torch.long)
     train_data, valid_data = get_train_validation_split(data)
 
-    model = BigramLanguageModel(len(vocab)).to(device)
+    model = Model(len(vocab)).to(device)
 
     loss_history = train_model(model, train_data, valid_data)
     plot_loss_history(loss_history, "loss_history.png")

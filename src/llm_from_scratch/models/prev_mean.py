@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 
 
-class BigramLanguageModel(nn.Module):
+class Model(nn.Module):
     def __init__(self, vocab_size: int):
         super().__init__()
         # each token maps onto a next-token distribution
@@ -11,12 +11,16 @@ class BigramLanguageModel(nn.Module):
         self.token_embedding_table = nn.Embedding(vocab_size, vocab_size)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
-        # for each single token x, predict which token y comes next
         # x and y are both of shape (batch_size, block_size)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
+        logits_prev_mean = torch.zeros((B, T, C))
+        for b in range(B):
+            for t in range(T):
+                logits_prev = logits[b, :t+1]
+                logits_prev_mean[b, t] = torch.mean(logits_prev, 0)
         loss = (
-            F.cross_entropy(logits.view(B*T, C), y.reshape(B*T))
+            F.cross_entropy(logits_prev_mean.view(B*T, C), y.reshape(B*T))
             if y is not None
             else torch.Tensor(0)
         )

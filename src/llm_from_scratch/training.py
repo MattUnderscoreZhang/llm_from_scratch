@@ -47,4 +47,5 @@ def train_model(
             losses = estimate_loss(model, train_data, valid_data, batch_size, block_size)
             loss_history["training"].append(losses["training"])
             loss_history["validation"].append(losses["validation"])
+            print(f"Batch {i}: training loss {losses['training']:.4f}, validation loss {losses['validation']:.4f}")
     return loss_history
