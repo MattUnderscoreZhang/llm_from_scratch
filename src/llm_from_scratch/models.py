@@ -24,7 +24,7 @@ class BigramLanguageModel(nn.Module):
 
     def generate(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
         for _ in range(max_new_tokens):
-            logits, _ = self(x[:, -1].unsqueeze(-1))  # last token in each batch only - (B, C)
+            logits, _ = self(x)  # last token in each batch only - (B, C)
             logits = logits[:, -1, :]  # remove dimension - (B, C)
             probs = F.softmax(logits, dim=-1)  # (B, C)
             x_next = torch.multinomial(probs, num_samples=1)  # (B, 1)

@@ -1,14 +1,12 @@
 [project]
 name = "llm_from_scratch"
 version = "0.1.0"
-description = "Tutorial following Karpathy's YouTube lecture."
+description = "Learning project. LLM built following Karpathy's YouTube lecture and notes taken from gpt-fast."
 authors = [
     {name = "Matt Zhang", email = "set.stun@gmail.com"},
 ]
 dependencies = [
     "torch>=2.1.1",
-    "tiktoken>=0.5.1",
-    "numpy>=1.26.2",
 ]
 requires-python = ">=3.11"
 readme = "README.md"
