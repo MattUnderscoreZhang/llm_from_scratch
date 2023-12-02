@@ -12,7 +12,7 @@ class Model(nn.Module):
 
     def forward(self, x: torch.Tensor, y: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
         # for each single token x, predict which token y comes next
-        # x and y are both of shape (batch_size, block_size)
+        # x and y are both of shape (batch_size, max_context_length)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
         loss = (

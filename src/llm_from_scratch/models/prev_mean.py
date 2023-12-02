@@ -20,7 +20,7 @@ class Model(nn.Module):
         return logits_prev_mean
 
     def forward(self, x: torch.Tensor, y: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
-        # x and y are both of shape (batch_size, block_size)
+        # x and y are both of shape (batch_size, max_context_length)
         logits = self.token_embedding_table(x)
         B, T, C = logits.shape
         logits_prev_mean = self._get_prev_mean_logits(logits)

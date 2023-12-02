@@ -10,13 +10,13 @@ def get_train_validation_split(data: torch.Tensor, valid_pct: float = 0.2) -> tu
     return train_data, valid_data
 
 
-def get_batch(data: torch.Tensor, batch_size: int, block_size: int) -> tuple[torch.Tensor, torch.Tensor]:
+def get_batch(data: torch.Tensor, batch_size: int, max_context_length: int) -> tuple[torch.Tensor, torch.Tensor]:
     """
-    Get [batch_size] random contiguous batches from [data], each of length [block_size].
-    x and y are both of shape (batch_size, block_size), and are offset by 1.
+    Get [batch_size] random contiguous batches from [data], each of length [max_context_length].
+    x and y are both of shape (batch_size, max_context_length), and are offset by 1.
     """
-    ix = torch.randint(len(data) - block_size, (batch_size,))
+    ix = torch.randint(len(data) - max_context_length, (batch_size,))
     return (
-        torch.stack([data[i:i+block_size] for i in ix]).to(device),
-        torch.stack([data[i+1:i+block_size+1] for i in ix]).to(device),
+        torch.stack([data[i:i+max_context_length] for i in ix]).to(device),
+        torch.stack([data[i+1:i+max_context_length+1] for i in ix]).to(device),
     )
