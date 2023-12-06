@@ -1,3 +1,4 @@
+from modal import Stub, Image
 import torch
 
 from llm_from_scratch.analysis import generate, plot_loss_history
@@ -8,8 +9,23 @@ from llm_from_scratch.tokenizer import get_token_set, encode
 from llm_from_scratch.training import train_model
 
 
-if __name__ == "__main__":
-    torch.manual_seed(1337)
+stub = Stub("llm_from_scratch")
+image = (
+    Image.debian_slim()
+    # .pip_install("torch", "matplotlib")
+    .run_commands([
+        "apt-get update",
+        "apt-get install -y git",
+        "git clone https://github.com/MattUnderscoreZhang/llm_from_scratch.git",
+        "pip install pdm",
+        "cd llm_from_scratch; pdm install",
+        "source /llm_from_scratch/.venv/bin/activate"
+    ])
+)
+
+
+@stub.function(image=image)
+def train():
     with open("data/tiny_shakespeare.txt", "r") as f:
         text = f.read()
 
@@ -18,6 +34,7 @@ if __name__ == "__main__":
     train_data, valid_data = get_train_validation_split(data)
 
     max_context_length = 256
+    print(f"Starting training on {device}")
     model = Model(
         vocab_size=len(vocab),
         max_context_length=max_context_length,
@@ -38,3 +55,12 @@ if __name__ == "__main__":
         vocab=vocab,
     )
     print(generated_text)
+
+
+@stub.local_entrypoint()
+def main():
+    train.remote()
+
+
+if __name__ == "__main__":
+    train.local()
