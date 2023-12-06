@@ -1,23 +1,11 @@
 import torch
-from torch import nn
 
-from llm_from_scratch.analysis import plot_loss_history
+from llm_from_scratch.analysis import generate, plot_loss_history
 from llm_from_scratch.device import device
-from llm_from_scratch.models.attention import Model
+from llm_from_scratch.models.multihead_attention import Model
 from llm_from_scratch.sample_prep import get_train_validation_split
-from llm_from_scratch.tokenizer import get_token_set, encode, decode
+from llm_from_scratch.tokenizer import get_token_set, encode
 from llm_from_scratch.training import train_model
-
-
-def generate(model: nn.Module, context: torch.Tensor, max_new_tokens: int, vocab: list[str]) -> str:
-    generated_text = decode(
-        model.generate_next_token(
-            context,
-            max_new_tokens=max_new_tokens,
-        ).tolist()[0],
-        vocab,
-    )
-    return generated_text
 
 
 if __name__ == "__main__":
@@ -29,7 +17,7 @@ if __name__ == "__main__":
     data = torch.tensor(encode(text, vocab), dtype=torch.long)
     train_data, valid_data = get_train_validation_split(data)
 
-    max_context_length = 8
+    max_context_length = 256
     model = Model(
         vocab_size=len(vocab),
         max_context_length=max_context_length,

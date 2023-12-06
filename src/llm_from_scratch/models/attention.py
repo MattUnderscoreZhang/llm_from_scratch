@@ -18,6 +18,7 @@ class Model(nn.Module):
         self.token_embedding_table = nn.Embedding(vocab_size, embedding_size)
         self.position_embedding_table = nn.Embedding(max_context_length, embedding_size)
         self.max_context_length = max_context_length
+        self.head_size = head_size
         self.key_head = nn.Linear(embedding_size, head_size, bias=False)
         self.query_head = nn.Linear(embedding_size, head_size, bias=False)
         self.value_head = nn.Linear(embedding_size, head_size, bias=False)
@@ -38,14 +39,16 @@ class Model(nn.Module):
         queries = self.query_head(x)  # (B, T, head_size)
         values = self.value_head(x)  # (B, T, head_size)
         attention_matrix = queries @ keys.transpose(-2, -1)  # (B, T, T)
+        attention_matrix *= self.head_size ** -0.5  # scale by sqrt(head_size)
         T = attention_matrix.shape[-1]
         lower_matrix = torch.tril(torch.ones(T, T))  # lower triangular matrix
         attention_matrix = attention_matrix.masked_fill(lower_matrix == 0, float("-inf"))  # -inf on top diagonal
-        attention_matrix = F.softmax(attention_matrix, dim=-1)  # becomes a prev-value averager when left-multiplied
+        attention_matrix = F.softmax(attention_matrix, dim=-1)  # becomes a prev-value weighter (with weights summing to 1)
         attention_matrix = self.dropout(attention_matrix)  # (B, T, T)
         return attention_matrix @ values  # (B, T, head_size)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor | None = None) -> tuple[torch.Tensor, torch.Tensor]:
+        # x and y are each shape (B, T), where each element is an integer in range(vocab_size)
         embedding = self._create_embedding(x)  # (B, T, embedding_size)
         weighted_vectors = self._apply_attention_head(embedding)  # (B, T, head_size)
         logits = self.fc_layer(weighted_vectors)  # (B, T, vocab_size)
@@ -57,7 +60,7 @@ class Model(nn.Module):
         )
         return logits, loss
 
-    def generate_next_token(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+    def generate_next_tokens(self, x: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
         for _ in range(max_new_tokens):
             logits, _ = self(x[:, -self.max_context_length:])  # truncate input vectors
             logits = logits[:, -1, :]  # remove dimension - (B, C)

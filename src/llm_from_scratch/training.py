@@ -30,12 +30,13 @@ def train_model(
     model: nn.Module,
     train_data: torch.Tensor,
     valid_data: torch.Tensor,
-    batch_size: int = 32,
+    batch_size: int = 64,
     max_context_length: int = 8,
     n_batches: int = 10_000,
-    calculate_loss_every: int = 100,
+    calculate_loss_every: int = 1_000,
+    learning_rate: float = 3e-4,
 ) -> dict[str, list[float]]:
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
     loss_history = {"training": [], "validation": []}
     for i in range(n_batches):
         x, y = get_batch(train_data, batch_size, max_context_length)
