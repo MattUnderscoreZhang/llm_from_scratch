@@ -12,23 +12,12 @@ from llm_from_scratch.training import train_model
 stub = Stub("llm_from_scratch")
 image = (
     Image.debian_slim()
-    # .pip_install("torch", "matplotlib")
-    .run_commands([
-        "apt-get update",
-        "apt-get install -y git",
-        "git clone https://github.com/MattUnderscoreZhang/llm_from_scratch.git",
-        "pip install pdm",
-        "cd llm_from_scratch; pdm install",
-        "source /llm_from_scratch/.venv/bin/activate"
-    ])
+    .pip_install_from_pyproject("pyproject.toml")
 )
 
 
-@stub.function(image=image)
-def train():
-    with open("data/tiny_shakespeare.txt", "r") as f:
-        text = f.read()
-
+@stub.function(image=image, gpu="any")
+def train(text: str):
     vocab = get_token_set(text)
     data = torch.tensor(encode(text, vocab), dtype=torch.long)
     train_data, valid_data = get_train_validation_split(data)
@@ -59,8 +48,12 @@ def train():
 
 @stub.local_entrypoint()
 def main():
-    train.remote()
+    with open("data/tiny_shakespeare.txt", "r") as f:
+        text = f.read()
+    train.remote(text)
 
 
 if __name__ == "__main__":
-    train.local()
+    with open("data/tiny_shakespeare.txt", "r") as f:
+        text = f.read()
+    train.local(text)
