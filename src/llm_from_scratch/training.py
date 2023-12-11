@@ -32,8 +32,8 @@ def train_model(
     valid_data: torch.Tensor,
     batch_size: int = 64,
     max_context_length: int = 8,
-    n_batches: int = 10_000,
-    calculate_loss_every: int = 1_000,
+    n_batches: int = 3_000,
+    calculate_loss_every: int = 100,
     learning_rate: float = 3e-4,
 ) -> dict[str, list[float]]:
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
