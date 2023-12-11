@@ -1,8 +1,9 @@
 from modal import Stub, Image
 import torch
 
-from llm_from_scratch.analysis import generate, plot_loss_history
+from llm_from_scratch.analysis import plot_loss_history
 from llm_from_scratch.device import device
+from llm_from_scratch.inference import perform_inference
 from llm_from_scratch.models.multihead_attention import Model
 from llm_from_scratch.sample_prep import get_train_validation_split
 from llm_from_scratch.tokenizer import get_token_set, encode
@@ -37,7 +38,7 @@ def train(text: str):
     )
     plot_loss_history(loss_history, "loss_history.png")
 
-    generated_text = generate(
+    generated_text = perform_inference(
         model=model,
         context=torch.tensor([[vocab.index("S")]]).to(device),
         max_new_tokens=500,
